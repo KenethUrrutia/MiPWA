@@ -183,30 +183,48 @@ Crear el archivo `sw.js`:
 
 ```javascript
 const CACHE_NAME = `temperature-converter-v1`;
+const CACHE_URLS = [
+	'./',
+	'./index.html',
+	'./converter.js',
+	'./converter.css',
+	'./manifest.json',
+	'./icon512_rounded.png'
+];
 
+// El evento 'install' se dispara cuando el Service Worker se instala por primera vez.
 self.addEventListener('install', (event) => {
+	// El Service Worker espera hasta que esté la caché
 	event.waitUntil(
 		(async () => {
 			const cache = await caches.open(CACHE_NAME);
-			cache.addAll(['/', '/converter.js', '/converter.css']);
+			cache.addAll(CACHE_URLS).catch((err) => {
+				console.error('Error al almacenar en caché', err);
+			});
 		})()
 	);
 });
 
+// El evento 'fetch' se dispara cada vez que la aplicación hace una petición de red.
 self.addEventListener('fetch', (event) => {
+	// event.respondWith() nos permite modificar la respuesta a esta petición.
 	event.respondWith(
 		(async () => {
 			const cache = await caches.open(CACHE_NAME);
+
+			// busca en el cache una respuesta almacenada para esta URL.
 			const cachedResponse = await cache.match(event.request);
+
 			if (cachedResponse) {
 				return cachedResponse;
-			}
-			try {
-				const fetchResponse = await fetch(event.request);
-				cache.put(event.request, fetchResponse.clone());
-				return fetchResponse;
-			} catch (e) {
-				// Network fallback
+			} else {
+				try {
+					const fetchResponse = await fetch(event.request);
+					cache.put(event.request, fetchResponse.clone());
+					return fetchResponse;
+				} catch (e) {
+					// Error
+				}
 			}
 		})()
 	);
@@ -218,7 +236,14 @@ Registrar el Service Worker en `index.html`:
 ```html
 <script>
 	if ('serviceWorker' in navigator) {
-		navigator.serviceWorker.register('/sw.js', { scope: '/' });
+		navigator.serviceWorker
+			.register('./sw.js', { scope: '/' })
+			.then((registration) => {
+				console.log('ServiceWorker registration successful with scope: ', registration.scope);
+			})
+			.catch((error) => {
+				console.log('ServiceWorker registration failed: ', error);
+			});
 	}
 </script>
 ```
