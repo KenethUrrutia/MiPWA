@@ -1,11 +1,11 @@
 const CACHE_NAME = `temperature-converter-v1`;
 const CACHE_URLS = [
-	'/', // index
-	'/converter.js', // css
-	'/converter.css', // js
-	'/index.html', // html
-	'/manifest.json', // manifest
-	'/icon512_rounded.png' // icon
+	'./',
+	'./index.html',
+	'./converter.js',
+	'./converter.css',
+	'./manifest.json',
+	'./icon512_rounded.png'
 ];
 
 // El evento 'install' se dispara cuando el Service Worker se instala por primera vez.
